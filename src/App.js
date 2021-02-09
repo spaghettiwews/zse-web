@@ -120,7 +120,7 @@ const App = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetch("http://localhost:8000/")
+      await fetch("https://api.stonks.co.zw/")
       .then((response) => {
         return response.json()
       })
@@ -142,7 +142,7 @@ const App = () => {
     Object.keys(counters).map((counter, index) => {
 
       const fetchData = async () => {
-        await fetch(`http://localhost:8000/history/${counter}`)
+        await fetch(`https://api.stonks.co.zw/history/${counter}`)
         .then((response) => {
           return response.json()
         })
