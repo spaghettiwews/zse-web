@@ -4,9 +4,9 @@ name: Build and push image to Docker Hub
 # or API.
 on: 
   push:
-    branches: [master]
+    branches: [main]
   pull_requests:
-    branches: [master]
+    branches: [main]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
