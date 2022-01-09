@@ -5,7 +5,7 @@ name: Build and push image to Docker Hub
 on: 
   push:
     tags: [ "releases/[1-9]+.[0-9]+.[0-9]+" ]
-    branches: [ main ]
+    # branches: [ main ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -31,4 +31,4 @@ jobs:
       # - name: Push image to Docker Hub
         # run: docker push whiskeymikey/zse-web:latest  
       - name: Echo github.ref value
-        run: echo ${{ github.ref }} 
+        run: echo ${{ github.event.release.tag_name }} 
