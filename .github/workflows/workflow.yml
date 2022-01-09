@@ -17,6 +17,8 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2 
+        uses: actions/checkout@v2
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v1
       - name: Build Docker image
-        run: docker build -t whiskeymikey/zse-web:latest .
+        run: docker buildx -t whiskeymikey/zse-web:latest .
