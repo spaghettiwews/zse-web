@@ -31,4 +31,4 @@ jobs:
       - name: Push image to Docker Hub
         run: docker push whiskeymikey/zse-web:latest  
       - name: Echo github.ref value
-        run: echo ${{ github.ref }}
+        run: echo ${{ github.ref }} 
