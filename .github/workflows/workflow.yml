@@ -26,5 +26,4 @@ jobs:
       - name: Login into Docker Hub
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Push image to Docker Hub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/zse-web:${{ env.RELEASE_TAG }} 
- 
+        run: docker push --all-tags ${{ secrets.DOCKERHUB_USERNAME }}/zse-web
