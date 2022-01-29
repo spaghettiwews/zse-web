@@ -1,36 +1,40 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { AreaChart, Area } from 'recharts'
+import { formatDistance } from 'date-fns'
 
 const Wrapper = styled.div`
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;800&display=swap');
-background: #000000;
-color: #ffffff;
+display: grid;
+grid-template-columns: 520px auto;
+grid-gap: 22px;
+background: #fff1e5;
+color: #000;
 font-family: 'Inter', sans-serif;
 margin: 0;
 min-height: 100vh;
 padding:22px;
 width: 100%;
 
-& > h1, > time {
+& > div > header > h1, 
+> div > header > time {
   font-size: 2rem;
   font-weight: 800;
 }
 
-& > h1 {
+& > div > header > h1 {
   margin: 0;
 }
 
-& > time {
+& > div > header > time {
   color: #8e8e92;
   display: block;
   margin-bottom: 20px;
 }
 
-& > input[type="text"] {
-  background-color: #1c1c1e;
-  border: none;
-  color: #8e8e92;
+& > div > header > input[type="text"] {
+  background-color: #fff7ef;
+  border: 1px solid #b3b3b4;
+  color: #1d1d1e;
   width: 100%;
   border-radius: 8px;
   height: 34px;
@@ -43,17 +47,20 @@ width: 100%;
 `
 
 const Listing = styled.ul`
-color: #ffffff;
+color: #000;
 font-size: 14px;
 list-style: none;
 margin: 0;
 padding: 0;
 
-& > li {
-  border-bottom: 1px solid #323235;
+& > li > details > summary {
+  border-bottom: 1px solid #b3b3b4;
+  color: #fff;
+  cursor: pointer;
   display: grid;
   grid-template-columns: [name] 3fr [graph] 1.3fr [price] 1fr;
   padding: 18px 0;
+  text-decoration: none;
 
   & > div {
     display: flex;
@@ -78,7 +85,7 @@ padding: 0;
   & .ticker_symbol {
     font-weight: 600;
     font-size: 1.25rem;
-    color: #ffffff;
+    color: #000;
   }
 
   & .company_name, .closing_price {
@@ -92,6 +99,10 @@ padding: 0;
     // white-space: nowrap;
     // overflow: hidden;
     // text-overflow: ellipsis;
+  }
+
+  & .closing_price {
+    color: #000;
   }
 
   & .percent_change {
@@ -111,12 +122,89 @@ padding: 0;
 }
 `
 
-const App = () => {
+const NewsList = styled.ul`
+  padding: 22px;
+  line-height: 22px;
+  background-color: #fff7ef;
 
+  &:empty {
+    // display: none;
+  }
+`
+
+const NewsLink = styled.li`
+  margin-bottom: 1rem;
+
+  & > a {
+    color: #fff;
+    text-decoration: none;
+    color: #1e6dc0;
+    font-family: Verdana,Arial,Tahoma;
+    font-size: 0.8rem;
+  }
+
+  time {
+    color: #828282;
+    display: block;
+    font-size: .6rem;
+  }
+`
+
+const ListItem = (props) => {
+  let temp = {}
+  let articles = {}
+
+  const handleClick = (event, query) => {
+    // window.location.hash = `#${props.counter.toLowerCase()}`
+    const fetchData = async () => {
+      await fetch(`https://stonks.co.zw/api/news/${query}`)
+        .then((response) => {
+          return response.json()
+        })
+        .then((json) => {
+          json["rss"].channel.item.forEach(article => {
+            temp[Number.parseInt(new Date(article.pubDate).getTime() / 1000)] = article
+          });
+          articles[props.counter] = temp
+          props.setNews(articles)
+        })
+        .catch((err) => {
+          console.log(err)
+        });
+    }
+    fetchData()
+  }
+
+  return (
+    <li id={props.counter.toLowerCase()}>
+      <details onClick={(event) => handleClick(event, props.query)}>
+        {props.children}
+      </details>
+    </li>
+  )
+}
+
+const News = (props) => {
+  if (Object.keys(props.news)[0] === props.counter) {
+    return Object.keys(props.news[props.counter]).sort((a, b) => b - a).map((article, index) => {
+      return (
+        <NewsLink key={index}>
+          <a href={props.news[props.counter][article].link} target='_blank'>{props.news[props.counter][article].title}</a>
+          <time>Posted {formatDistance(new Date(props.news[props.counter][article].pubDate), new Date(), { addSuffix: true })}</time>
+        </NewsLink>
+      )
+    })
+  }
+  else {
+    return null
+  }
+}
+
+const App = () => {
   const [counters, setCounters] = useState({})
-  const [today] = useState(new Intl.DateTimeFormat('en-GB', { /*year: 'numeric',*/ month: 'long', day: 'numeric' }).format(Date.now()))
+  const [today] = useState(new Intl.DateTimeFormat('en-GB', { month: 'long', day: 'numeric' }).format(Date.now()))
   const [history, setHistory] = useState({})
-  // const [, forceUpdate] = useReducer(x => x + 1, 0)
+  const [news, setNews] = useState({})
 
   useEffect(() => {
     const fetchData = async () => {
@@ -166,16 +254,33 @@ const App = () => {
   }, [counters])
 
 
+  useEffect(() => {
+
+    let data = Object.keys(counters).map((counter, index) => {
+      return {
+        ticker: counter,
+        percent_change: Number(counters[counter].percent_change.replace("%", ""))
+      }
+    });
+
+    setTreemapData(data)
+
+  }, [counters])
+
   return (
     <Wrapper>
+      <div>
+        <header>
       <h1>Stonks</h1>
       <time>{today}</time>
       <input type="text" placeholder="Search" />
+        </header>
       <Listing>
         {Object.keys(counters).map((counter, index) => {
           const direction = (Number(counters[counter].percent_change.replace("%", "")) >= 0) ? "pos" : "neg";
           return (
-          <li key={index}>
+              <ListItem key={index} query={counters[counter].company_name.replaceAll(' ', '+')} setNews={setNews} counter={counter}>
+                <summary>
             <div className="name_symbol">
               <span className="ticker_symbol">{counter}</span>
               <span className="company_name">{counters[counter].company_name}</span>
@@ -217,9 +322,17 @@ const App = () => {
               <span className="closing_price">${counters[counter].closing_price}</span>
               <span className={`percent_change ${direction}`}>{counters[counter].percent_change}</span>
             </div>
-          </li>)
+                </summary>
+                <NewsList>
+                  <News news={news} counter={counter} />
+                </NewsList>
+              </ListItem>
+            )
         })}   
       </Listing>
+      </div>
+      <div>
+      </div>
     </Wrapper>
   )
 }
