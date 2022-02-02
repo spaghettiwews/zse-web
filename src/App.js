@@ -20,7 +20,7 @@ import { formatDistance } from "date-fns";
 const Wrapper = styled.div`
   @import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600;800&display=swap");
   display: grid;
-  grid-template-columns: 520px auto;
+  grid-template-columns: 1fr;
   grid-gap: 22px;
   background: #fff1e5;
   color: #000;
@@ -29,6 +29,10 @@ const Wrapper = styled.div`
   min-height: 100vh;
   padding: 22px;
   width: 100%;
+
+  @media (min-width: 48rem) {
+    grid-template-columns: 520px auto;
+  }
 
   & > div > header > h1,
   > div > header > time {
@@ -59,6 +63,18 @@ const Wrapper = styled.div`
     outline: none;
     margin-bottom: 14px;
   }
+`;
+
+const GraphWrapper = styled.div`
+    display: none;   
+    width: calc(100vw - 586px);
+    height: calc(100vh - 44px);
+    position: fixed;
+    right: 0;
+
+    @media (min-width: 62rem) {
+      display: block;
+    }
 `;
 
 const Listing = styled.ul`
@@ -398,14 +414,7 @@ const App = () => {
           })}
         </Listing>
       </div>
-      <div
-        style={{
-          width: "calc(100vw - 586px)",
-          height: "calc(100vh - 44px)",
-          position: "fixed",
-          right: 0,
-        }}
-      >
+      <GraphWrapper>
         <ResponsiveContainer>
           <BarChart
             width={1000}
@@ -423,11 +432,11 @@ const App = () => {
             <XAxis
               type="number"
               dataKey="percent_change"
-              tickCount={15}
+              tickCount={10}
               allowDecimals={false}
               style={{ fontSize: "11px" }}
-              domain={[-15, 15]}
-              hide={true}
+              domain={[-20, 20]}
+              // hide={true}
             >
               <Label
                 value="% Change"
@@ -437,7 +446,7 @@ const App = () => {
               />
             </XAxis>
             <YAxis dataKey="ticker" type="category" hide={true} />
-            {/* <Tooltip /> */}
+            <Tooltip />
             <ReferenceLine x={0} stroke="#000" />
             <Bar barSize={2} dataKey="percent_change">
               <LabelList
@@ -451,7 +460,7 @@ const App = () => {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </GraphWrapper>
     </Wrapper>
   );
 };
